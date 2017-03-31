@@ -22,8 +22,9 @@ public class Multiplication {
 		@Override
 		public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
 			//input: movieB \t movieA=relation
-
 			//pass data to reducer
+			String[] line = value.toString().split("\t");
+			context.write(new Text(line[0]), new Text(line[1]));
 		}
 	}
 
@@ -35,6 +36,9 @@ public class Multiplication {
 
 			//input: user,movie,rating
 			//pass data to reducer
+			//output key: movie,  value: user:rating
+			String[] line = value.toString().split(",");
+			context.write(new Text(line[1]), new Text(line[0] + ":" + line[2]));
 		}
 	}
 
@@ -46,6 +50,30 @@ public class Multiplication {
 
 			//key = movieB value = <movieA=relation, movieC=relation... userA:rating, userB:rating...>
 			//collect the data for each movie, then do the multiplication
+			Map<String, Double> relationMap = new HashMap<String, Double>();
+			Map<String, Double> ratingMap = new HashMap<String, Double>();
+
+			for (Text value: values) {
+				if(value.toString().contains("=")) {
+					String[] movie_relation = value.toString().split("=");
+					relationMap.put(movie_relation[0], Double.parseDouble(movie_relation[1]));
+				}
+				else {
+					String[] user_rating = value.toString().split(":");
+					ratingMap.put(user_rating[0], Double.parseDouble(user_rating[1]));
+				}
+			}
+
+			for(Map.Entry<String, Double> entry: relationMap.entrySet()) {
+				String movie = entry.getKey();
+				double relation = entry.getValue();
+
+				for(Map.Entry<String, Double> element: ratingMap.entrySet()) {
+					String user = element.getKey();
+					double rating = element.getValue();
+					context.write(new Text(user + ":" + movie), new DoubleWritable(relation*rating));
+				}
+			}
 		}
 	}
 

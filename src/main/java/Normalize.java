@@ -22,6 +22,10 @@ public class Normalize {
 
             //movieA:movieB \t relation
             //collect the relationship list for movieA
+            String[] movie_relation = value.toString().trim().split("\t");
+            String[] movies = movie_relation[0].split(":");
+
+            context.write(new Text(movies[0]), new Text(movies[1] + ":" + movie_relation[1]));
         }
     }
 
@@ -33,6 +37,21 @@ public class Normalize {
 
             //key = movieA, value=<movieB:relation, movieC:relation...>
             //normalize each unit of co-occurrence matrix
+            int sum = 0;
+            Map<String, Integer> map = new HashMap<String, Integer>();
+            while (values.iterator().hasNext()) {
+                //movieB = relation
+                String[] movie_relation = values.iterator().next().toString().split(":");
+                int relation = Integer.parseInt(movie_relation[1]);
+                sum += relation;
+                map.put(movie_relation[0], relation);
+            }
+
+            for(Map.Entry<String, Integer> entry: map.entrySet()) {
+                String outputKey = entry.getKey();
+                String outputValue = key.toString() + "=" + (double)entry.getValue()/sum;
+                context.write(new Text(outputKey), new Text(outputValue));
+            }
         }
     }
 

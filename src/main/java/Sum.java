@@ -23,6 +23,8 @@ public class Sum {
         public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
 
             //pass data to reducer
+            String[] line = value.toString().split("\t");
+            context.write(new Text(line[0]), new DoubleWritable(Double.parseDouble(line[1])));
         }
     }
 
@@ -33,7 +35,13 @@ public class Sum {
                 throws IOException, InterruptedException {
 
             //user:movie relation
-           //calculate the sum
+            //calculate the sum
+            double sum = 0;
+            for(DoubleWritable value: values) {
+                sum += value.get();
+            }
+
+            context.write(key, new DoubleWritable(sum));
         }
     }
 
