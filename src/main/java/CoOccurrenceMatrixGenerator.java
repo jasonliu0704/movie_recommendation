@@ -17,13 +17,13 @@ public class CoOccurrenceMatrixGenerator {
 		// map method
 		@Override
 		public void map(LongWritable key, Text value, Context context) throws IOException, InterruptedException {
-			//value = userid \t movie1: rating, movie2: rating...
-			//key = movie1: movie2 value = 1
+			// input: userid \t movie1: rating, movie2: rating...
+			// output: movie1: movie2 value = 1
 			//calculate each user rating list: <movieA, movieB>
 			String[] movie_ratings = value.toString().split("\t")[1].split("\t");
 
 			// relate movie1 with movie2
-			for(int i=0; i<movie_rating.length; i++){
+			for(int i=0; i<movie_ratings.length; i++){
 				String movie1 = movie_ratings[i].trim().split(":")[0];
 				for(int j=0; j<movie_ratings.length; j++){
 					String movie2 = movie_ratings[j].trim().split(":")[0];
@@ -40,7 +40,7 @@ public class CoOccurrenceMatrixGenerator {
 		public void reduce(Text key, Iterable<IntWritable> values, Context context)
 				throws IOException, InterruptedException {
 			//key movie1:movie2 value = iterable<1, 1, 1>
-			//calculate each two movies have been watched by how many people
+			//calculate how many times two movie have been co-occured
 			//sum up the relation
 			int sum = 0;
 			while(values.iterator().hasNext()) {
